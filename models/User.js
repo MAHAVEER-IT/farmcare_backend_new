@@ -5,9 +5,10 @@ const userSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true },
     password: { type: String, required: true },
     email: { type: String, unique: true, sparse: true },
-    name: { type: String, required: true }, // Added name field
-    phone: { type: String, required: true }, // Added phone field
-    userType: { type: String, required: true }, // Added userType field
+    name: { type: String, required: true },
+    phone: { type: String, required: true },
+    userType: { type: String, required: true },
+    location: { type: String, required: true },  // Add this field
     profilePic: { type: String },
     lastLogin: { type: Date, default: Date.now },
     createdAt: { type: Date, default: Date.now },
