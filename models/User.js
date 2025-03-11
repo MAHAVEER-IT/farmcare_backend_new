@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     phone: { type: String, required: true },
     userType: { type: String, required: true },
-    location: { type: String, required: true },  // Add this field
+    location: { type: String, default: "" },  // Change to default empty string instead of required
     profilePic: { type: String },
     lastLogin: { type: Date, default: Date.now },
     createdAt: { type: Date, default: Date.now },
