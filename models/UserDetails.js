@@ -12,7 +12,7 @@ const userDetailsSchema = new mongoose.Schema({
     phone: { type: String, unique: true, required: true },
     name: { type: String, required: true },
     userType: { type: String, default: "farmer", enum: ["farmer", "veterinarian"] },
-    location: { type: String, required: true },
+    location: { type: String, default: "" },  // Make location optional with default empty string
     animalTypes: [animalTypes],
     profilePicture: { type: String, default: "avatar.svg" },
     bio: { type: String, default: "" },
