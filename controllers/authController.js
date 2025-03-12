@@ -124,3 +124,23 @@ export const googleLogin = async (req, res) => {
         return res.status(500).json({ message: "Server error", error: error.message });
     }
 };
+
+export const getDoctors = async (req, res) => {
+    try {
+        const doctors = await User.find({ userType: "doctor" })
+            .select('-password') // Exclude password field
+            .sort({ createdAt: -1 }); // Sort by newest first
+
+        res.status(200).json({
+            success: true,
+            data: doctors
+        });
+    } catch (error) {
+        console.error('Error fetching doctors:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching doctors',
+            error: error.message
+        });
+    }
+};

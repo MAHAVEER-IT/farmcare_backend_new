@@ -13,6 +13,7 @@ import userDetailsRoutes from './routes/userDetailsRoutes.js';
 import commentsRoutes from './routes/commentsRoutes.js';
 import photoRoutes from './routes/photoRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
+import channelRoutes from './routes/channelRoutes.js';
 import routesInfo from './routes/routesInfo.js';
 import { auth } from './middleware/auth.js';
 
@@ -83,6 +84,7 @@ app.use("/api/v1/userdetails", auth, userDetailsRoutes);
 app.use("/api/v1/comments", auth, commentsRoutes);
 app.use("/api/v1/photos", auth, photoRoutes);
 app.use("/api/v1/message", auth, messageRoutes);
+app.use("/api/v1/channel", auth, channelRoutes);
 app.use(routesInfo);
 
 // Error handling middleware
