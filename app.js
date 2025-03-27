@@ -41,8 +41,16 @@ app.use(express.urlencoded({
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
+const voiceDir = path.join(uploadsDir, 'voice');
+
 if (!fs.existsSync(uploadsDir)){
     fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Create voice uploads directory if it doesn't exist
+if (!fs.existsSync(voiceDir)){
+    fs.mkdirSync(voiceDir, { recursive: true });
+    console.log('Created voice uploads directory');
 }
 
 // Serve static files from uploads directory

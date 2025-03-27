@@ -15,6 +15,23 @@ const messageSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    messageType: {
+        type: String,
+        enum: ['text', 'voice', 'image'],
+        default: 'text'
+    },
+    voiceUrl: {
+        type: String,
+        default: ''
+    },
+    audioDuration: {
+        type: Number,
+        default: 0
+    },
+    clientId: {
+        type: String,
+        default: null
+    },
     timestamp: {
         type: Date,
         default: Date.now

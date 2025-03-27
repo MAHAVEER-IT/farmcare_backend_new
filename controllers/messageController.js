@@ -158,3 +158,88 @@ export const getDoctorChats = async (req, res) => {
         });
     }
 };
+
+/**
+ * Handle voice message uploads
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} Response with the voice message data
+ */
+export const sendVoiceMessage = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { receiverId, clientId } = req.body;
+    
+    // Check if voice file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No voice file provided'
+      });
+    }
+    
+    // Create voice message data
+    const voiceFilePath = req.file.path;
+    const audioDuration = req.body.audioDuration || 0; // Duration in seconds, if provided
+    
+    // Create server URL for the voice file
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const voiceUrl = `${baseUrl}/${voiceFilePath.replace(/\\/g, '/')}`;
+
+    // Create the message
+    const message = new Message({
+      senderId: userId,
+      receiverId,
+      content: 'Voice message', 
+      messageType: 'voice',
+      voiceUrl,
+      audioDuration,
+      clientId: clientId || `voice_${Date.now()}`,
+    });
+
+    // Save the message
+    await message.save();
+    
+    // Emit to the receiver via Socket.IO if they're connected
+    const io = req.app.get('io');
+    if (io) {
+      // Emit to the receiver's room
+      io.to(receiverId).emit('private_message', {
+        message: {
+          _id: message._id,
+          senderId: userId,
+          receiverId,
+          content: 'Voice message',
+          messageType: 'voice',
+          voiceUrl,
+          audioDuration,
+          timestamp: message.createdAt,
+          clientId: message.clientId,
+        }
+      });
+      
+      console.log(`Voice message emitted to ${receiverId}`);
+    }
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        _id: message._id,
+        senderId: userId,
+        receiverId,
+        content: 'Voice message',
+        messageType: 'voice',
+        voiceUrl,
+        audioDuration,
+        timestamp: message.createdAt,
+        clientId: message.clientId,
+      }
+    });
+  } catch (error) {
+    console.error('Error sending voice message:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
