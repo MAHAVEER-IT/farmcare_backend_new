@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import mongoose from 'mongoose';
 import { compressImage } from '../utils/imageUtils.js';
 import { fileURLToPath } from 'url';
+import { cloudinary, upload as cloudinaryUpload } from '../config/cloudinary.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,7 +26,7 @@ const storage = multer.diskStorage({
   }
 });
 
-export const upload = multer({
+const localUpload = multer({
   storage: storage,
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB
@@ -41,12 +42,10 @@ export const upload = multer({
 
 // Mongoose schema and model for storing photos
 const photoSchema = new mongoose.Schema({
-  data: String, // Store base64 image data
-  contentType: String,
-  filename: String,
+  url: String,
+  publicId: String,
   uploadDate: { type: Date, default: Date.now },
-  userId: String,
-  size: Number
+  userId: String
 });
 
 const Photo = mongoose.model('Photo', photoSchema);
@@ -124,11 +123,9 @@ export const completeUpload = async (req, res) => {
     const compressedImage = await compressImage(completeImage);
 
     const photo = new Photo({
-      data: compressedImage,
-      contentType: session.contentType,
-      filename: session.filename,
-      userId: req.body.userId || 'anonymous',
-      size: compressedImage.length
+      url: compressedImage,
+      publicId: session.filename,
+      userId: req.body.userId || 'anonymous'
     });
 
     await photo.save();
@@ -136,7 +133,7 @@ export const completeUpload = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      imageUrl: `/api/v1/photos/${photo._id}`,
+      imageUrl: compressedImage,
       message: 'Upload completed successfully'
     });
   } catch (error) {
@@ -151,40 +148,93 @@ export const completeUpload = async (req, res) => {
 // Controller function for handling image uploads
 export const uploadPhoto = async (req, res) => {
   try {
-    upload(req, res, function(err) {
-      console.log('Processing upload...');
+    console.log('Starting upload process...');
+    console.log('Request headers:', req.headers);
+    console.log('Request body:', req.body);
+    console.log('Request file:', req.file);
 
-      if (err) {
-        console.error('Upload error:', err);
-        return res.status(400).json({
-          success: false,
-          message: err.message
-        });
-      }
-
-      // If no file was provided, return success without image
-      if (!req.file) {
-        return res.status(200).json({
-          success: true,
-          message: 'No image provided'
-        });
-      }
-
-      // If file was provided, return image URL
-      const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-      console.log('Generated image URL:', imageUrl);
-
-      res.status(201).json({
-        success: true,
-        imageUrl: imageUrl,
-        message: 'Image uploaded successfully'
+    if (!req.file) {
+      console.log('No file received in request');
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided'
       });
+    }
+
+    // Create photo record in database
+    const photo = new Photo({
+      url: req.file.path,
+      publicId: req.file.filename,
+      userId: req.user._id
+    });
+
+    await photo.save();
+    console.log('Photo saved to database:', photo);
+
+    res.status(201).json({
+      success: true,
+      imageUrl: req.file.path,
+      message: 'Image uploaded successfully'
     });
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('Upload error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while uploading'
+      message: error.message || 'Error uploading image'
+    });
+  }
+};
+
+export const deletePhoto = async (req, res) => {
+  try {
+    const photo = await Photo.findById(req.params.id);
+    
+    if (!photo) {
+      return res.status(404).json({
+        success: false,
+        message: 'Photo not found'
+      });
+    }
+
+    // Delete from Cloudinary
+    await cloudinary.uploader.destroy(photo.publicId);
+
+    // Delete from database
+    await photo.remove();
+
+    res.status(200).json({
+      success: true,
+      message: 'Photo deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting photo'
+    });
+  }
+};
+
+export const getPhoto = async (req, res) => {
+  try {
+    const photo = await Photo.findById(req.params.id);
+    
+    if (!photo) {
+      return res.status(404).json({
+        success: false,
+        message: 'Photo not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      photo
+    });
+  } catch (error) {
+    console.error('Get photo error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error retrieving photo'
     });
   }
 };
