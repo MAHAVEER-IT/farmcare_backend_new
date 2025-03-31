@@ -29,12 +29,12 @@ const storage = multer.diskStorage({
 const localUpload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
+    fileSize: 10 * 1024 * 1024 // 10MB
   },
   fileFilter: (req, file, cb) => {
     console.log('Received file:', file);
-    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-      return cb(new Error('Only image files are allowed!'), false);
+    if (!file.originalname.match(/\.(jpg|jpeg|png|mp3|aac|wav|m4a)$/)) {
+      return cb(new Error('Only image and audio files are allowed!'), false);
     }
     cb(null, true);
   }

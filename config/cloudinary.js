@@ -12,7 +12,7 @@ const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'farmcare',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'mp3', 'aac', 'wav', 'm4a'],
     transformation: [{ width: 500, height: 500, crop: 'limit' }]
   }
 });
@@ -20,11 +20,11 @@ const storage = new CloudinaryStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
+    fileSize: 10 * 1024 * 1024 // 10MB
   },
   fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith('image/')) {
-      return cb(new Error('Only image files are allowed!'), false);
+    if (!file.mimetype.startsWith('image/') && !file.mimetype.startsWith('audio/')) {
+      return cb(new Error('Only image and audio files are allowed!'), false);
     }
     cb(null, true);
   }
