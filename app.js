@@ -17,7 +17,13 @@ import channelRoutes from './routes/channelRoutes.js';
 import routesInfo from './routes/routesInfo.js';
 import { auth } from './middleware/auth.js';
 
+// Import ecommerce routes
+import ecommerceRoutes from './ecommerce_backend/index.js';
+
 dotenv.config();
+
+// Load ecommerce environment variables
+dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), 'ecommerce_backend/config/config.env') });
 
 const app = express();
 
@@ -94,6 +100,9 @@ app.use("/api/v1/photos", auth, photoRoutes);
 app.use("/api/v1/message", auth, messageRoutes);
 app.use("/api/v1/channel", auth, channelRoutes);
 app.use(routesInfo);
+
+// Mount ecommerce routes
+app.use("/api/v1/ecommerce", auth, ecommerceRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

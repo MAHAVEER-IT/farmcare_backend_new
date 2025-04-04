@@ -36,6 +36,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "path": "^0.12.7",
+    "razorpay": "^2.9.2",
     "react-google-login": "^5.2.2",
     "sharp": "^0.32.1",
     "socket.io": "^4.7.4",
