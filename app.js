@@ -19,6 +19,7 @@ import petRoutes from './routes/petRoutes.js';
 import { auth } from './middleware/auth.js';
 import { initNotificationScheduler } from './services/notificationService.js';
 import diseasePointRoutes from './routes/diseasePointRoutes.js';
+import shareRoutes from './routes/shareRoutes.js';
 
 dotenv.config();
 
@@ -98,6 +99,7 @@ app.use("/api/v1/message", auth, messageRoutes);
 app.use("/api/v1/channel", auth, channelRoutes);
 app.use("/api/v1/pets", auth, petRoutes);
 app.use("/api/v1/disease-points", auth, diseasePointRoutes);
+app.use("/api/v1/share", shareRoutes);
 app.use(routesInfo);
 
 // Error handling middleware
