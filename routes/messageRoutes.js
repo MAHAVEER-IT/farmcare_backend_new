@@ -1,12 +1,5 @@
 import express from 'express';
-import {
-    sendMessage,
-    getChatHistory,
-    getDoctorChats,
-    sendVoiceMessage,
-    generateMessageShareUrl,
-    getSharedMessage
-} from '../controllers/messageController.js';
+import { sendMessage, getChatHistory, getDoctorChats, sendVoiceMessage } from '../controllers/messageController.js';
 import { auth } from '../middleware/auth.js';
 import multer from 'multer';
 import path from 'path';
@@ -38,10 +31,6 @@ const upload = multer({
     }
   }
 });
-
-// Share routes
-router.post('/share/:messageId', generateMessageShareUrl);
-router.get('/share/:shareToken', getSharedMessage);
 
 // Protected routes - require authentication
 router.post('/send', auth, sendMessage);

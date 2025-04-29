@@ -9,19 +9,13 @@ import {
     addRepost,
     addView,
     uploadImage,
-    handleLike,
-    generateShareUrl,
-    getSharedPost
+    handleLike
 } from '../controllers/postController.js';
 
 const router = express.Router();
 
 // Image upload route
 router.post('/upload', uploadImage);
-
-// Share routes
-router.get('/share/:shareToken', getSharedPost);
-router.post('/share/:postId', generateShareUrl);
 
 // Other existing routes
 router.post('/createpost', createPost);

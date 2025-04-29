@@ -40,8 +40,10 @@ channelSchema.methods.generateShareToken = function() {
 };
 
 // Verify if share token is valid
-channelSchema.methods.isShareTokenValid = function() {
-    return this.shareTokenExpiry && this.shareTokenExpiry > Date.now();
+channelSchema.methods.isShareTokenValid = function(token) {
+    return this.shareToken === token && 
+           this.shareTokenExpiry && 
+           this.shareTokenExpiry > Date.now();
 };
 
 export default mongoose.model('Channel', channelSchema);
