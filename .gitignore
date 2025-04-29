@@ -1,0 +1,10 @@
+# Ignore all .log files
+*.log
+
+# Ignore all node_modules
+node_modules/
+
+# Ignore environment files
+.env
+config/config.env
+!config/config.env.example
