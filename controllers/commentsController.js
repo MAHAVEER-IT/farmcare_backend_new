@@ -9,10 +9,18 @@ export const getComments = async (req, res) => {
     console.log('Getting comments for post:', postId);
     console.log('User from auth:', req.user); // Debug auth
 
-    const comments = await Comment.find({ postId })
-      .sort({ createdAt: -1 })
-      .lean()
-      .exec();
+    // Get top-level comments (no parentId)
+    const comments = await Comment.find({ 
+      postId,
+      parentId: null 
+    })
+    .sort({ createdAt: -1 })
+    .populate({
+      path: 'replies',
+      options: { sort: { createdAt: 1 } }
+    })
+    .lean()
+    .exec();
 
     console.log(`Found ${comments?.length || 0} comments`);
 
@@ -134,6 +142,95 @@ export const likeComment = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error liking comment',
+      error: error.message
+    });
+  }
+};
+
+// Get comment replies
+export const getReplies = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    
+    const replies = await Comment.find({ parentId: commentId })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      replies: replies || []
+    });
+  } catch (error) {
+    console.error('Get replies error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error fetching replies',
+      error: error.message
+    });
+  }
+};
+
+// Create a reply to a comment
+export const createReply = async (req, res) => {
+  try {
+    const { commentId } = req.params;
+    const { content } = req.body;
+    const userId = req.user.userId;
+
+    // Find parent comment
+    const parentComment = await Comment.findById(commentId);
+    if (!parentComment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parent comment not found'
+      });
+    }
+
+    // Get user details
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Create reply
+    const reply = new Comment({
+      postId: parentComment.postId,
+      userId,
+      content,
+      authorName: user.name || 'Anonymous',
+      parentId: commentId
+    });
+
+    await reply.save();
+
+    // Update parent comment
+    parentComment.replies.push(reply._id);
+    parentComment.replyCount = (parentComment.replyCount || 0) + 1;
+    await parentComment.save();
+
+    return res.status(201).json({
+      success: true,
+      reply: {
+        id: reply._id,
+        postId: reply.postId,
+        userId: reply.userId,
+        authorName: reply.authorName,
+        content: reply.content,
+        parentId: reply.parentId,
+        createdAt: reply.createdAt,
+        replyCount: 0,
+        likes: []
+      }
+    });
+  } catch (error) {
+    console.error('Create reply error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error creating reply',
       error: error.message
     });
   }

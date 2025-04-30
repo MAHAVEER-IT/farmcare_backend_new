@@ -1,5 +1,5 @@
 import express from 'express';
-import { getComments, createComment, likeComment } from '../controllers/commentsController.js';
+import { getComments, createComment, likeComment, getReplies, createReply } from '../controllers/commentsController.js';
 import { auth } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -32,6 +32,24 @@ router.post('/create', async (req, res, next) => {
 router.post('/:commentId/like', async (req, res, next) => {
   try {
     await likeComment(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get replies for a comment
+router.get('/:commentId/replies', async (req, res, next) => {
+  try {
+    await getReplies(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Create a reply to a comment
+router.post('/:commentId/reply', async (req, res, next) => {
+  try {
+    await createReply(req, res);
   } catch (error) {
     next(error);
   }
