@@ -9,7 +9,8 @@ import {
     addRepost,
     addView,
     uploadImage,
-    handleLike
+    handleLike,
+    filterPosts
 } from '../controllers/postController.js';
 
 const router = express.Router();
@@ -50,5 +51,8 @@ router.put('/addlike/:postId', addLike);
 router.put('/addrepost/:postId', addRepost);
 router.put('/addview/:postId', addView);
 router.post('/like', handleLike);
+
+// Add this new route before export
+router.get('/filter', filterPosts);
 
 export default router;

@@ -276,3 +276,36 @@ export const handleLike = async (req, res) => {
     });
   }
 };
+
+export const filterPosts = async (req, res) => {
+  try {
+    const { ids } = req.query;
+    
+    if (!ids) {
+      return res.status(400).json({
+        success: false,
+        message: 'Post IDs are required'
+      });
+    }
+
+    const postIds = ids.split(',');
+    const posts = await Post.find({ postId: { $in: postIds } })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: 'userId',
+        select: 'name username'
+      });
+
+    res.status(200).json({
+      success: true,
+      posts: posts
+    });
+  } catch (error) {
+    console.error('Filter posts error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error filtering posts',
+      error: error.message
+    });
+  }
+};
